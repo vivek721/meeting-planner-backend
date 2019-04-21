@@ -24,11 +24,19 @@ let eventSchema = new Schema({
     type: String,
     default: ''
   },
+  location: {
+    type: String,
+    default: "00:00:00"
+  },
   userId: {
     type: String,
     default: ''
   },
   creatorId: {
+    type: String,
+    default: "admin"
+  },
+  creatorName: {
     type: String,
     default: "admin"
   }

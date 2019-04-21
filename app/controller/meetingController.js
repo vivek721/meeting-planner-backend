@@ -105,8 +105,10 @@ let createEvent = (req, res) => {
         title: req.body.title,
         start: req.body.startDate,
         end: req.body.endDate,
+        location: req.body.location,
         userId: req.body.userId,
-        creatorId: req.body.creatorId
+        creatorId: req.body.creatorId,
+        creatorName: req.body.creatorName,
       });
       newEvent.save((err, newUser) => {
         if (err) {

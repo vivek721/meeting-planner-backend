@@ -179,6 +179,7 @@ let PasswordResetMail = (req, res) => {
                 name: `${details.userDetails.firstName} ${
           details.userDetails.lastName
         }`,
+                /* resetPasswordBaseUrl: "http://edvivek.xyz/resetpasword", */
                 resetPasswordBaseUrl: "http://localhost:4200/resetpasword",
                 userId: details.userDetails.userId
             };
@@ -222,25 +223,42 @@ let PasswordResetMail = (req, res) => {
                     reject(apiResponse);
                 } else {
                     console.log(info);
-                    resolve(info);
+                    resolve(data);
                 }
             });
         });
     };
 
+    deleteAuthToken = (userDetails) => {
+        return new Promise((resolve, reject) => {
+            AuthModel.findOneAndRemove({
+                userId: userDetails.userId
+            }, (err, result) => {
+                if (err) {
+                    console.log(err)
+                    logger.error(err.message, 'user Controller: resetPassword', 10)
+                    let apiResponse = response.generate(true, `error occurred: ${err.message}`, 500, null)
+                    reject(apiResponse);
+                } else if (check.isEmpty(result)) {
+                    let apiResponse = response.generate(true, 'Already deleted or Invalid UserId', 404, null)
+                    reject(apiResponse);
+                } else {
+                    let apiResponse = response.generate(false, 'Reset mail sent and Auth deleted Successfully', 200, null);
+                    resolve(apiResponse);
+                }
+            })
+        })
+
+    }
+
     findUser(req, res)
         .then(generateToken)
         .then(saveToken)
         .then(sendResetMail)
+        .then(deleteAuthToken)
         .then(resolve => {
-            delete resolve.userPassword;
-            let apiResponse = response.generate(
-                false,
-                "Reset request sent",
-                200,
-                resolve
-            );
-            res.send(apiResponse);
+
+            res.send(resolve);
         })
         .catch(err => {
             console.log(err);
@@ -363,6 +381,7 @@ let loginFunction = (req, res) => {
                 } else {
                     tokenDetails.userId = userDetails.userId;
                     tokenDetails.userDetails = userDetails;
+                    console.log("this is token details" + tokenDetails + "  " + userDetails)
                     resolve(tokenDetails);
                 }
             });
@@ -642,63 +661,13 @@ let resetPassword = (req, res) => {
         });
     };
 
-    let generateToken = userDetails => {
-        let userDetailsobj = userDetails.toObject();
-        delete userDetailsobj.userPassword;
-        delete userDetailsobj._id;
-        delete userDetailsobj.__v;
-        delete userDetailsobj.createdOn;
-        console.log("generate token");
-        return new Promise((resolve, reject) => {
-            token.generateToken(userDetails, (err, tokenDetails) => {
-                if (err) {
-                    console.log(err);
-                    let apiResponse = response.generate(
-                        true,
-                        "Failed To Generate Token",
-                        500,
-                        null
-                    );
-                    reject(apiResponse);
-                } else {
-                    tokenDetails.userId = userDetails.userId;
-                    tokenDetails.userDetails = userDetails;
-                    resolve(tokenDetails);
-                }
-            });
-        });
-    };
 
-    let validatePassword = tokenDetails => {
-        console.log("validatePassword");
-        return new Promise((resolve, reject) => {
-            AuthModel.findOne({
-                    authToken: tokenDetails.authToken
-                },
-                (err, retrievedTokenDetails) => {
-                    if (err) {
-                        logger.error(err.message, "userController: saveToken", 10);
-                        let apiResponse = response.generate(
-                            true,
-                            "Failed To verify Token",
-                            500,
-                            null
-                        );
-                        reject(apiResponse);
-                    } else {
-                        resolve(retrievedTokenDetails);
-                    }
-                }
-            );
-        });
-    };
-
-    let updatePassword = tokenDetails => {
+    let updatePassword = () => {
         console.log("updatePassword");
         return new Promise((resolve, reject) => {
             let userId = req.body.userId;
             UserModel.update({
-                userId: req.params.userId
+                userId: req.body.userId
             }, {
                 $set: {
                     userPassword: passwordLib.hashpassword(req.body.userPassword)
@@ -726,13 +695,11 @@ let resetPassword = (req, res) => {
     };
 
     findUser(req, res)
-        .then(generateToken)
-        .then(validatePassword)
         .then(updatePassword)
         .then(resolve => {
             let apiResponse = response.generate(
                 false,
-                "User password udated",
+                "User password updated",
                 200,
                 resolve
             );
