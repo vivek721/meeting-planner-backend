@@ -179,8 +179,8 @@ let PasswordResetMail = (req, res) => {
                 name: `${details.userDetails.firstName} ${
           details.userDetails.lastName
         }`,
-                /* resetPasswordBaseUrl: "http://edvivek.xyz/resetpasword", */
-                resetPasswordBaseUrl: "http://localhost:4200/resetpasword",
+                 resetPasswordBaseUrl: "http://edvivek.xyz/resetpasword",
+                /*  resetPasswordBaseUrl: "http://localhost:4200/resetpasword", */
                 userId: details.userDetails.userId
             };
 
