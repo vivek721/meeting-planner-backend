@@ -11,7 +11,7 @@ module.exports.setRouter = app => {
   let baseUrl = `${appConfig.apiVersion}/users`;
   /*  Send country Name */
   app.get(`${baseUrl}/countryName`, (req, res) => {
-    let data = fs.readFileSync("../Meeting-Backend/config/names.json");
+    let data = fs.readFileSync("../meeting-planner-backend/config/names.json");
     countryName = JSON.parse(data);
     res.send(countryName);
   });
@@ -38,7 +38,7 @@ module.exports.setRouter = app => {
 
   /*  Send country Name */
   app.get(`${baseUrl}/countryCode`, (req, res) => {
-    let data = fs.readFileSync("../Meeting-Backend/config/phone.json");
+    let data = fs.readFileSync("../meeting-planner-backend/config/phone.json");
     countryCode = JSON.parse(data);
     res.send(countryCode);
   });
